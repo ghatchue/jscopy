@@ -1,0 +1,12 @@
+{
+  "name": "deep-copy-js",
+  "version": "1.0.0",
+  "main": "deepCopy.js",
+  "ignore": [
+    "**/.*",
+    "*.md",
+    "test",
+    "Gruntfile.js",
+    "package.json"
+  ]
+}
