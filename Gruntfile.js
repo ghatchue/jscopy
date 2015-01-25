@@ -77,11 +77,6 @@ module.exports = function (grunt) {
           process.env.BROWSER
         ]
       },
-      dev: {
-        singleRun: false,
-        browsers: ['PhantomJS'],
-        reporters: 'dots'
-      },
       // Testers for dist build files
       dist: {
         options: {
