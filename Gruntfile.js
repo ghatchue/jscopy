@@ -61,12 +61,18 @@ module.exports = function (grunt) {
           'src/deepCopy.js',
           'test/spec/**.*.js'
         ],
+        preprocessors: {
+          'src/deepCopy.js': 'coverage'
+        },
+        coverageReporter: {
+          type: 'html'
+        },
         sauceLabs: {
           username: process.env.SAUCE_USERNAME,
           accessKey: process.env.SAUCE_ACCESS_KEY,
           testName: 'deep-copy-js, browser: ' + process.env.BROWSER
         },
-        reporters: ['progress', 'saucelabs'],
+        reporters: ['saucelabs', 'coverage', 'mocha'],
         customLaunchers: JSON.parse(fs.readFileSync('test/browsers.json'))
       },
       continuous: {

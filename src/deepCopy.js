@@ -44,12 +44,24 @@ SOFTWARE.
 
 owl = (function() {
 
+  // Checks if Object.defineProperty is implemented. We'll assume that
+  // getOwnPropertyNames is also available if defineProperty is implemented.
+  // See compatibility matrix at: http://kangax.github.io/compat-table/es5/
+  var es5 = Object.defineProperty && (function() {
+      try {
+        Object.defineProperty({}, 'x', {});
+        return true;
+      } catch (e) {
+        return false;
+      }
+    })();
+
 	// the re-usable constructor function used by clone().
 	function Clone() {}
 
 	// clone objects, skip other types.
 	function clone(target) {
-		if ( typeof target == 'object' ) {
+		if ( target !== null && typeof target === 'object' ) {
 			Clone.prototype = target;
 			return new Clone();
 		} else {
@@ -57,14 +69,21 @@ owl = (function() {
 		}
 	}
 
+  // Helper function to copy an object's properties when ES5 is supported
+  function copyOwnProperties(source, dest) {
+    Object.getOwnPropertyNames(source).forEach(function(property) {
+      Object.defineProperty(dest, property,
+        Object.getOwnPropertyDescriptor(source, property));
+    });
+  }
 
 	// Shallow Copy 
 	function copy(target) {
-		if (typeof target !== 'object' ) {
+		if (target === null || typeof target !== 'object' ) {
 			return target;  // non-object have value sematics, so target is already a copy.
 		} else {
 			var value = target.valueOf();
-			if (target != value) { 
+			if (target != value) {
 				// the object is a standard object wrapper for a native type, say String.
 				// we can make a copy by instantiating a new object around the value.
 				return new target.constructor(value);
@@ -73,19 +92,28 @@ owl = (function() {
 				// (not the original) to get an empty object with the same prototype chain as
 				// the original.  If just copy the instance properties.  Otherwise, we have to 
 				// copy the whole thing, property-by-property.
+        var c;
 				if ( target instanceof target.constructor && target.constructor !== Object ) { 
-					var c = clone(target.constructor.prototype);
+					c = clone(target.constructor.prototype);
 				
 					// give the copy all the instance properties of target.  It has the same
 					// prototype as target, so inherited properties are already there.
-					for ( var property in target) { 
-						if (target.hasOwnProperty(property)) {
-							c[property] = target[property];
-						} 
-					}
+          if (es5) {
+            copyOwnProperties(target, c);
+          } else {
+            for (var property in target) {
+              if (Object.prototype.hasOwnProperty.call(target, property)) {
+                c[property] = target[property];
+              }
+            }
+          }
 				} else {
-					var c = {};
-					for ( var property in target ) c[property] = target[property];
+					c = {};
+          if (es5) {
+            copyOwnProperties(target, c);
+          } else {
+            for (var property in target) c[property] = target[property];
+          }
 				}
 				
 				return c;
@@ -253,7 +281,7 @@ owl = (function() {
 
 		populate: function(deepCopy, source, result) {
 			for ( var key in source ) {
-				if ( source.hasOwnProperty(key) ) {
+				if ( Object.prototype.hasOwnProperty.call(source, key) ) {
 					result[key] = deepCopy(source[key]);
 				}
 			}

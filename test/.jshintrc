@@ -3,7 +3,7 @@
   "browser": true,
   "esnext": true,
   "bitwise": true,
-  "camelcase": true,
+  "camelcase": false,
   "curly": true,
   "eqeqeq": true,
   "immed": true,
@@ -21,7 +21,6 @@
   "globals": {
     "after": false,
     "afterEach": false,
-    "angular": false,
     "before": false,
     "beforeEach": false,
     "browser": false,
@@ -30,7 +29,9 @@
     "inject": false,
     "it": false,
     "jasmine": false,
-    "spyOn": false
+    "spyOn": false,
+    "owl": false,
+    "xit": false
   }
 }
 
