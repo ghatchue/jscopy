@@ -41,8 +41,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+'use strict';
 
-owl = (function() {
+var owl = (function() {
 
   // Checks if Object.defineProperty is implemented. We'll assume that
   // getOwnPropertyNames is also available if defineProperty is implemented.
@@ -104,7 +105,7 @@ owl = (function() {
 				// (not the original) to get an empty object with the same prototype chain as
 				// the original.  If just copy the instance properties.  Otherwise, we have to 
 				// copy the whole thing, property-by-property.
-        var c;
+        var c, property;
 				if ( target instanceof target.constructor && target.constructor !== Object ) { 
 					c = clone(target.constructor.prototype);
 				
@@ -113,7 +114,7 @@ owl = (function() {
           if (es5) {
             copyOwnProperties(target, c);
           } else {
-            for (var property in target) {
+            for (property in target) {
               if (Object.prototype.hasOwnProperty.call(target, property)) {
                 c[property] = target[property];
               }
@@ -124,7 +125,7 @@ owl = (function() {
           if (es5) {
             copyOwnProperties(target, c);
           } else {
-            for (var property in target) c[property] = target[property];
+            for (property in target) c[property] = target[property];
           }
 				}
 				
@@ -162,10 +163,10 @@ owl = (function() {
 		// copiedObjects keeps track of objects already copied by this
 		// deepCopy operation, so we can correctly handle cyclic references.
 		this.copiedObjects = [];
-		thisPass = this;
+		var thisPass = this;
 		this.recursiveDeepCopy = function(source) {
 			return thisPass.deepCopy(source);
-		}
+		};
 		this.depth = 0;
 	}
 	DeepCopyAlgorithm.prototype = {
@@ -219,7 +220,7 @@ owl = (function() {
 				}
 			}
 			// the generic copier can handle anything, so we should never reach this line.
-			throw new Error("no DeepCopier is able to copy " + source);
+			throw new Error('no DeepCopier is able to copy ' + source);
 		},
 
 		// once we've identified which DeepCopier to use, we need to call it in a very
@@ -241,7 +242,7 @@ owl = (function() {
 			// and decrement it afterwards.
 			this.depth++;
 			if ( this.depth > this.maxDepth ) {
-				throw new Error("Exceeded max recursion depth in deep copy.");
+				throw new Error('Exceeded max recursion depth in deep copy.');
 			}
 
 			// It's now safe to let the deepCopier recursively deep copy its properties.
@@ -275,7 +276,7 @@ owl = (function() {
 			deepCopier = new DeepCopier(deepCopier);
 		}
 		deepCopiers.unshift(deepCopier);
-	}
+	};
 
 	// Generic Object copier
 	// the ultimate fallback DeepCopier, which tries to handle the generic case.  This
