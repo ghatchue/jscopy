@@ -18,7 +18,7 @@ var Dog = function(a, b) {
 extend(Dog, Animal);
 
 
-var es5 = Object.defineProperty && (function() {
+var es5 = typeof Object.defineProperty === 'function' && (function() {
     try {
       Object.defineProperty({}, 'x', {});
       return true;
@@ -149,10 +149,11 @@ describe('owl.copy', function() {
   });
 
   it('should make shallow-copy of a plain object', function() {
-    var original = { a:'A', b:{c:'C'} };
+    var original = { a:'A', b:{c:'C'}, c:[1,2] };
     var copy = owl.copy(original);
     original.b.c = 'Car';
     expect(copy.b.c).toEqual('Car');
+    expect(copy.c).toBe(original.c);
   });
 
 
@@ -160,7 +161,6 @@ describe('owl.copy', function() {
     var original = { a: 'A' };
     Object.defineProperty(original, 'b', {
       value: 'B',
-      writable: true,
       enumerable: false
     });
     var copy = owl.copy(original);
@@ -172,7 +172,6 @@ describe('owl.copy', function() {
     var original = new Dog('A', 'B');
     Object.defineProperty(original, 'c', {
       value: 'C',
-      writable: true,
       enumerable: false
     });
     var copy = owl.copy(original);
@@ -212,6 +211,225 @@ describe('owl.copy', function() {
     expect(copy.b).toEqual('B');
     expect(copy instanceof Dog).toBeTruthy();
     expect(copy instanceof Animal).toBeTruthy();
+  });
+
+});
+
+describe('owl.deepCopy', function() {
+
+  it('should not copy non-object types, they have value semantics', function() {
+    var a = 1;
+    var b = 'b';
+    var c = true;
+    var d = function() {};
+    var e;
+    expect(owl.deepCopy(a)).toBe(a);
+    expect(owl.deepCopy(b)).toBe(b);
+    expect(owl.deepCopy(c)).toBe(c);
+    expect(owl.deepCopy(d)).toBe(d);
+    expect(owl.deepCopy(e)).toBe(e);
+  });
+
+  it('should return null for null value', function() {
+    expect(owl.deepCopy(null)).toBeNull();
+  });
+
+  it('should copy primitive wrapper objects', function() {
+    /*jshint -W053*/
+    var a = new Number(123);
+    var b = new String('abc');
+    var c = new Boolean(true);
+    var d = new Date();
+    /*jshint +W053*/
+
+    expect(owl.deepCopy(a)).not.toBe(a);
+    expect(owl.deepCopy(b)).not.toBe(b);
+    expect(owl.deepCopy(c)).not.toBe(c);
+    expect(owl.deepCopy(d)).not.toBe(d);
+
+    expect(owl.deepCopy(a)).toEqual(a);
+    expect(owl.deepCopy(b)).toEqual(b);
+    expect(owl.deepCopy(c)).toEqual(c);
+    expect(owl.deepCopy(d)).toEqual(d);
+  });
+
+  it('should copy plain object properties', function() {
+    var original = { a:'A', b:'B' };
+    var copy = owl.deepCopy(original);
+    expect(copy).not.toBe(original);
+    expect(copy.a).toEqual('A');
+    expect(copy.b).toEqual('B');
+  });
+
+  it('should not make changes to original object visible through clone', function() {
+    var original = { a:'A', b:'B' };
+    var copy = owl.deepCopy(original);
+    original.b = 'Banana';
+    expect(original.b).toEqual('Banana');
+    expect(copy.b).toEqual('B');
+  });
+
+  it('should make deep-copy of a plain object', function() {
+    var original = { a:'A', b:{c:'C'}, c:[1,2] };
+    var copy = owl.deepCopy(original);
+    original.b.c = 'Car';
+    expect(copy.b.c).toEqual('C');
+    expect(copy.c).not.toBe(original.c);
+  });
+
+
+  if_es5_it('should recursively copy non-enumerable properties of a plain object', function() {
+    var original = { a: 'A' };
+    Object.defineProperty(original, 'b', {
+      value: {},
+      enumerable: false
+    });
+    Object.defineProperty(original.b, 'c', {
+      value: 'C',
+      enumerable: false
+    });
+    var copy = owl.deepCopy(original);
+    expect(original.b.c).toEqual('C');
+    expect(copy.b.c).toEqual('C');
+    expect(copy.b).not.toBe(original.b);
+  });
+
+  if_es5_it('should copy non-enumerable properties of a user defined class', function() {
+    var original = new Dog('A', 'B');
+    Object.defineProperty(original, 'c', {
+      value: 'C',
+      enumerable: false
+    });
+    var copy = owl.deepCopy(original);
+    expect(original.c).toEqual('C');
+    expect(copy.c).toEqual('C');
+  });
+
+  it('should make deep-copy of a class', function() {
+    var original = new Dog('A', {c: 'C'});
+    var copy = owl.deepCopy(original);
+    original.b.c = 'Car';
+    expect(copy.b.c).toEqual('C');
+  });
+
+  it('should copy a user defined class', function() {
+    var original = new Dog('A', 'B');
+    var copy = owl.deepCopy(original);
+    original.a = 'AA';
+    expect(copy).not.toBe(original);
+    expect(copy.a).toEqual('A');
+    expect(copy.b).toEqual('B');
+    expect(copy instanceof Dog).toBeTruthy();
+    expect(copy instanceof Animal).toBeTruthy();
+  });
+
+  it('should copy properties of an object that overrides hasOwnProperty ', function() {
+    var original = new Dog('A', 'B');
+    /*jshint -W001*/
+    original.hasOwnProperty = function() {
+      return false;
+    };
+    /*jshint +W001*/
+    var copy = owl.deepCopy(original);
+    original.a = 'AA';
+    expect(copy).not.toBe(original);
+    expect(copy.a).toEqual('A');
+    expect(copy.b).toEqual('B');
+    expect(copy instanceof Dog).toBeTruthy();
+    expect(copy instanceof Animal).toBeTruthy();
+  });
+
+  it('should handle cyclic references', function() {
+    var john = {
+      name: 'John Smith',
+      hobbies: ['surfing', 'diving'],
+      friends: []
+    };
+    var bob = {
+      name: 'Bob Boston',
+      hobbies: ['rowing', 'surfing'],
+      friends: [ john ]
+    };
+    john.friends.push(bob);
+    var john2 = owl.deepCopy(john);
+    var bob2 = john2.friends[0];
+
+    // bob was included in the deep copy,
+    // so now we have another bob.
+    expect(bob2).not.toBe(bob);
+
+    // john2 and bob2 have the same cyclic
+    // relationship as john and bob.
+    expect(bob2.friends[0]).toBe(john2);
+  });
+
+  it('should abort if the max recursion depth is reached', function() {
+    var a = {a:{b:{c:'C'}}};
+    expect(owl.deepCopy(a.a).b.c).toEqual('C');
+    expect(function(){ owl.deepCopy(a, 2); }).toThrow(new Error('Exceeded max recursion depth in deep copy.'));
+  });
+
+  it('should not copy the document DOM node', function() {
+    expect(owl.deepCopy(document)).toBe(document);
+  });
+
+  it('should use custom registered copiers', function() {
+    owl.deepCopy.register({
+      canCopy: function(source) {
+        return ( source.copyMe );
+      },
+
+      create: function() {
+        return {};
+      },
+
+      populate: function(deepCopy, source, result) {
+        result.copyMe = source.copyMe + 'abc';
+        return result;
+      }
+    });
+    expect(owl.deepCopy({copyMe: '123'}).copyMe).toEqual('123abc');
+  });
+
+  it('should recursively copy DOM nodes', function() {
+    var div = document.createElement('div');
+    var p1 = document.createElement('p');
+    var p2 = document.createElement('p');
+    var t1 = document.createTextNode('123');
+    var t2 = document.createTextNode('abc');
+    p1.appendChild(t1);
+    p2.appendChild(t2);
+    div.appendChild(p1);
+    div.appendChild(p2);
+    var divCopy = owl.deepCopy(div);
+
+    expect(divCopy).not.toBe(div);
+    expect(divCopy.children.length).toEqual(2);
+    expect(divCopy.children[0].firstChild).not.toBe(t1);
+    expect(divCopy.children[0].firstChild.textContent).toEqual('123');
+    expect(divCopy.children[1].firstChild).not.toBe(t2);
+    expect(divCopy.children[1].firstChild.textContent).toEqual('abc');
+  });
+
+  it('should preserve reference structure of DOM nodes with the rest of the copy', function() {
+    var outerDiv = document.createElement('div');
+    var headerDiv = document.createElement('div');
+    var footerDiv = document.createElement('div');
+    var contentP = document.createElement('div');
+    contentP.appendChild(outerDiv);
+    contentP.appendChild(headerDiv);
+    contentP.appendChild(footerDiv);
+    var original = {
+      outer: outerDiv,
+      header: headerDiv,
+      footer: footerDiv,
+      body: contentP
+    };
+    var copy = owl.deepCopy(original);
+    expect(copy.outer).not.toBe(original.outer);
+    expect(copy.outer).toBe(copy.body.children[0]);
+    expect(copy.header).toBe(copy.body.children[1]);
+    expect(copy.footer).toBe(copy.body.children[2]);
   });
 
 });

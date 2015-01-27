@@ -54,7 +54,7 @@ module.exports = function (grunt) {
 
     karma: {
       options: {
-        captureTimeout: 60000 * 2,
+        captureTimeout: 60000 * 3,
         singleRun: true,
         frameworks: ['jasmine', 'sinon'],
         files: [

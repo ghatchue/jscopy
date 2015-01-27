@@ -47,7 +47,7 @@ owl = (function() {
   // Checks if Object.defineProperty is implemented. We'll assume that
   // getOwnPropertyNames is also available if defineProperty is implemented.
   // See compatibility matrix at: http://kangax.github.io/compat-table/es5/
-  var es5 = Object.defineProperty && (function() {
+  var es5 = typeof Object.defineProperty === 'function' && (function() {
       try {
         Object.defineProperty({}, 'x', {});
         return true;
@@ -69,7 +69,7 @@ owl = (function() {
 		}
 	}
 
-  // Helper function to copy an object's properties when ES5 is supported
+  // Helper function to shallow-copy an object's properties when ES5 is supported
   function copyOwnProperties(source, dest) {
     Object.getOwnPropertyNames(source).forEach(function(property) {
       Object.defineProperty(dest, property,
@@ -280,11 +280,19 @@ owl = (function() {
 		},
 
 		populate: function(deepCopy, source, result) {
-			for ( var key in source ) {
-				if ( Object.prototype.hasOwnProperty.call(source, key) ) {
-					result[key] = deepCopy(source[key]);
-				}
-			}
+      if (es5) {
+        Object.getOwnPropertyNames(source).forEach(function (key) {
+          var descriptor = Object.getOwnPropertyDescriptor(source, key);
+          descriptor.value = deepCopy(descriptor.value);
+          Object.defineProperty(result, key, descriptor);
+        });
+      } else {
+        for (var key in source) {
+          if (Object.prototype.hasOwnProperty.call(source, key)) {
+            result[key] = deepCopy(source[key]);
+          }
+        }
+      }
 			return result;
 		}
 	});
