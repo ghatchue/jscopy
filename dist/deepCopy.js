@@ -83,7 +83,7 @@ owl = (function() {
 			return target;  // non-object have value sematics, so target is already a copy.
 		} else {
 			var value = target.valueOf();
-			if (target != value) {
+			if (target !== value) {
 				// the object is a standard object wrapper for a native type, say String.
 				// we can make a copy by instantiating a new object around the value.
 				return new target.constructor(value);

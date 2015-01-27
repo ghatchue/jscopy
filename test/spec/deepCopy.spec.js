@@ -113,7 +113,7 @@ describe('owl.copy', function() {
     expect(owl.copy(null)).toBeNull();
   });
 
-  it('should copy primitive wrapper objects', function() {
+  it('should copy object wrapper for native type', function() {
     /*jshint -W053*/
     var a = new Number(123);
     var b = new String('abc');
@@ -121,15 +121,34 @@ describe('owl.copy', function() {
     var d = new Date();
     /*jshint +W053*/
 
-    expect(owl.copy(a)).not.toBe(a);
-    expect(owl.copy(b)).not.toBe(b);
-    expect(owl.copy(c)).not.toBe(c);
-    expect(owl.copy(d)).not.toBe(d);
+    var a2 = owl.copy(a);
+    var b2 = owl.copy(b);
+    var c2 = owl.copy(c);
+    var d2 = owl.copy(d);
 
-    expect(owl.copy(a)).toEqual(a);
-    expect(owl.copy(b)).toEqual(b);
-    expect(owl.copy(c)).toEqual(c);
-    expect(owl.copy(d)).toEqual(d);
+    expect(a2).not.toBe(a);
+    expect(b2).not.toBe(b);
+    expect(c2).not.toBe(c);
+    expect(d2).not.toBe(d);
+
+    expect(a2 instanceof Number).toBeTruthy();
+    expect(b2 instanceof String).toBeTruthy();
+    expect(c2 instanceof Boolean).toBeTruthy();
+    expect(d2 instanceof Date).toBeTruthy();
+
+    expect(a2.valueOf()).toEqual(a.valueOf());
+    expect(b2.valueOf()).toEqual(b.valueOf());
+    expect(c2.valueOf()).toEqual(c.valueOf());
+    expect(d2.valueOf()).toEqual(d.valueOf());
+  });
+
+  it('should copy an object that implements a valueOf function', function() {
+    var original = {a: 'A', valueOf: function() { throw new Error('boom'); }};
+    var copy = owl.copy(original);
+    expect(copy).not.toBe(original);
+    console.log('## ' + typeof copy);
+    expect(copy.a).toEqual('A');
+    expect(function(){ copy.valueOf(); }).toThrow(new Error('boom'));
   });
 
   it('should copy plain object properties', function() {
@@ -234,7 +253,7 @@ describe('owl.deepCopy', function() {
     expect(owl.deepCopy(null)).toBeNull();
   });
 
-  it('should copy primitive wrapper objects', function() {
+  it('should copy object wrapper for native type', function() {
     /*jshint -W053*/
     var a = new Number(123);
     var b = new String('abc');
@@ -242,15 +261,25 @@ describe('owl.deepCopy', function() {
     var d = new Date();
     /*jshint +W053*/
 
-    expect(owl.deepCopy(a)).not.toBe(a);
-    expect(owl.deepCopy(b)).not.toBe(b);
-    expect(owl.deepCopy(c)).not.toBe(c);
-    expect(owl.deepCopy(d)).not.toBe(d);
+    var a2 = owl.deepCopy(a);
+    var b2 = owl.deepCopy(b);
+    var c2 = owl.deepCopy(c);
+    var d2 = owl.deepCopy(d);
 
-    expect(owl.deepCopy(a)).toEqual(a);
-    expect(owl.deepCopy(b)).toEqual(b);
-    expect(owl.deepCopy(c)).toEqual(c);
-    expect(owl.deepCopy(d)).toEqual(d);
+    expect(a2).not.toBe(a);
+    expect(b2).not.toBe(b);
+    expect(c2).not.toBe(c);
+    expect(d2).not.toBe(d);
+
+    expect(a2 instanceof Number).toBeTruthy();
+    expect(b2 instanceof String).toBeTruthy();
+    expect(c2 instanceof Boolean).toBeTruthy();
+    expect(d2 instanceof Date).toBeTruthy();
+
+    expect(a2.valueOf()).toEqual(a.valueOf());
+    expect(b2.valueOf()).toEqual(b.valueOf());
+    expect(c2.valueOf()).toEqual(c.valueOf());
+    expect(d2.valueOf()).toEqual(d.valueOf());
   });
 
   it('should copy plain object properties', function() {

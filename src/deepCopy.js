@@ -77,16 +77,28 @@ owl = (function() {
     });
   }
 
+  // Indicates if the object is a wrapper object for a native type
+  function isNativeTypeWrapper(object) {
+    // We could use the check below, but it can easily fail for objects
+    // that override the valueOf function.
+    //return object !== null && typeof object === 'object' && object !== object.valueOf();
+
+    // Instead, we explicitly check the object against built-in data-types
+    return (object instanceof Number ||
+            object instanceof String ||
+            object instanceof Boolean ||
+            object instanceof Date);
+  }
+
 	// Shallow Copy 
 	function copy(target) {
 		if (target === null || typeof target !== 'object' ) {
-			return target;  // non-object have value sematics, so target is already a copy.
+			return target;  // non-object have value semantics, so target is already a copy.
 		} else {
-			var value = target.valueOf();
-			if (target != value) {
+			if (isNativeTypeWrapper(target)) {
 				// the object is a standard object wrapper for a native type, say String.
 				// we can make a copy by instantiating a new object around the value.
-				return new target.constructor(value);
+				return new target.constructor(target.valueOf());
 			} else {
 				// ok, we have a normal object. If possible, we'll clone the original's prototype 
 				// (not the original) to get an empty object with the same prototype chain as
@@ -315,18 +327,18 @@ owl = (function() {
 		}
 	});
 
-	// Date copier
-	deepCopy.register({
-		canCopy: function(source) {
-			return ( source instanceof Date );
-		},
+  // Native type object wrapper copier
+  deepCopy.register({
+    canCopy: function(source) {
+      return isNativeTypeWrapper(source);
+    },
 
-		create: function(source) {
-			return new Date(source);
-		}
-	});
+    create: function(source) {
+      return new source.constructor(source.valueOf());
+    }
+  });
 
-	// HTML DOM Node
+  // HTML DOM Node
 
 	// utility function to detect Nodes.  In particular, we're looking
 	// for the cloneNode method.  The global document is also defined to
