@@ -146,7 +146,6 @@ describe('owl.copy', function() {
     var original = {a: 'A', valueOf: function() { throw new Error('boom'); }};
     var copy = owl.copy(original);
     expect(copy).not.toBe(original);
-    console.log('## ' + typeof copy);
     expect(copy.a).toEqual('A');
     expect(function(){ copy.valueOf(); }).toThrow(new Error('boom'));
   });
