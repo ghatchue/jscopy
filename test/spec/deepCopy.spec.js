@@ -17,8 +17,8 @@ var Dog = function(a, b) {
 };
 extend(Dog, Animal);
 
-
-var es5 = typeof Object.defineProperty === 'function' && (function() {
+var es5 =
+  typeof Object.defineProperty === 'function' && (function() {
     try {
       Object.defineProperty({}, 'x', {});
       return true;
@@ -142,12 +142,24 @@ describe('owl.copy', function() {
     expect(d2.valueOf()).toEqual(d.valueOf());
   });
 
-  it('should copy an object that implements a valueOf function', function() {
+  it('should copy a plain object that overrides the valueOf function', function() {
     var original = {a: 'A', valueOf: function() { throw new Error('boom'); }};
     var copy = owl.copy(original);
     expect(copy).not.toBe(original);
     expect(copy.a).toEqual('A');
     expect(function(){ copy.valueOf(); }).toThrow(new Error('boom'));
+  });
+
+  it('should copy a class that overrides the toString function', function() {
+    var Bird = function() {
+      Animal.call(this, 'A');
+      this.toString = function() { return 'abc'; };
+    };
+    extend(Bird, Animal);
+
+    var original = new Bird();
+    var copy = owl.copy(original);
+    expect(copy.toString()).toEqual('abc');
   });
 
   it('should copy plain object properties', function() {
@@ -281,6 +293,14 @@ describe('owl.deepCopy', function() {
     expect(d2.valueOf()).toEqual(d.valueOf());
   });
 
+  it('should copy an object that implements a valueOf function', function() {
+    var original = {a: 'A', valueOf: function() { throw new Error('boom'); }};
+    var copy = owl.deepCopy(original);
+    expect(copy).not.toBe(original);
+    expect(copy.a).toEqual('A');
+    expect(function(){ copy.valueOf(); }).toThrow(new Error('boom'));
+  });
+
   it('should copy plain object properties', function() {
     var original = { a:'A', b:'B' };
     var copy = owl.deepCopy(original);
@@ -305,6 +325,19 @@ describe('owl.deepCopy', function() {
     expect(copy.c).not.toBe(original.c);
   });
 
+  it('should recursively copy a class that overrides the toString function', function() {
+    var Bird = function() {
+      Animal.call(this, 'A');
+      this.toString = {a: {b: [1, 2, 3]}};  // toString is now a plain object
+    };
+    extend(Bird, Animal);
+
+    var original = new Bird();
+    var copy = owl.deepCopy(original);
+    expect(copy.toString.a).not.toBe(original.toString.a);
+    expect(copy.toString.a.b).not.toBe(original.toString.a.b);
+    expect(copy.toString.a.b).toEqual(original.toString.a.b);
+  });
 
   if_es5_it('should recursively copy non-enumerable properties of a plain object', function() {
     var original = { a: 'A' };
