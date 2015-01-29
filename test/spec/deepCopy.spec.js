@@ -434,7 +434,7 @@ describe('owl.deepCopy', function() {
     expect(function(){ owl.deepCopy(a, 2); }).toThrow(new Error('Exceeded max recursion depth in deep copy.'));
   });
 
-  it('should use custom registered copiers', function() {
+  it('should use custom registered copier', function() {
     owl.deepCopy.register({
       canCopy: function(source) {
         return ( source.copyMe );
@@ -450,6 +450,23 @@ describe('owl.deepCopy', function() {
       }
     });
     expect(owl.deepCopy({copyMe: '123'}).copyMe).toEqual('123abc');
+  });
+
+  it('should use custom copier registered via DeepCopier instance', function() {
+    var CustomCopier = function() {};
+    extend(CustomCopier, owl.deepCopy.DeepCopier);
+    CustomCopier.prototype.canCopy = function(source) {
+      return ( source.customCopier );
+    };
+    CustomCopier.prototype.create = function() {
+      return {};
+    };
+    CustomCopier.prototype.populate = function(deepCopy, source, result) {
+      result.customCopier = source.customCopier + 'abc';
+      return result;
+    };
+    owl.deepCopy.register(new CustomCopier());
+    expect(owl.deepCopy({customCopier: '123'}).customCopier).toEqual('123abc');
   });
 
   it('should recursively copy DOM nodes', function() {
