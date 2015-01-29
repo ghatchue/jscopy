@@ -75,14 +75,14 @@ var owl = (function() {
     })(),
 
     // List of Object.prototype functions that are not enumerable due to the DontEnum bug
-    dontEnumFunctions: [
-      'constructor',
+    dontEnums: [
+      'toString',
+      'toLocaleString',
+      'valueOf',
       'hasOwnProperty',
       'isPrototypeOf',
-      'toLocaleString',
-      'toString',
       'propertyIsEnumerable',
-      'valueOf'
+      'constructor'
     ]
   };
 
@@ -112,29 +112,6 @@ var owl = (function() {
             object instanceof Date);
   }
 
-  // Helper function to shallow-copy an object's properties by using
-  // getOwnPropertyNames for enumerating them, only available on ES5
-  // JavaScript engine is ECMAScript 5 compatible
-  function copyOwnProperties(source, dest) {
-    Object.getOwnPropertyNames(source).forEach(function(property) {
-      Object.defineProperty(dest, property,
-        Object.getOwnPropertyDescriptor(source, property));
-    });
-  }
-
-  // Helper function to shallow-copy property that are non-enumerable
-  // due to the "DontEnum" bug
-  function copyDontEnumProperties(source, dest) {
-    if (jsEnvironment.hasDontEnumBug) {
-      for (var i = 0; i < jsEnvironment.dontEnumFunctions.length; i++) {
-        var property = jsEnvironment.dontEnumFunctions[i];
-        if (Object.prototype.hasOwnProperty.call(source, property)) {
-          dest[property] = source[property];
-        }
-      }
-    }
-  }
-
   // Shallow Copy
   function copy(target) {
     if (target === null || typeof target !== 'object' ) {
@@ -147,36 +124,32 @@ var owl = (function() {
       } else {
         // ok, we have a normal object. If possible, we'll clone the original's prototype
         // (not the original) to get an empty object with the same prototype chain as
-        // the original.  If just copy the instance properties.  Otherwise, we have to
+        // the original, and just copy the instance properties.  Otherwise, we have to
         // copy the whole thing, property-by-property.
-        var c, property;
-        if ( target instanceof target.constructor && target.constructor !== Object ) {
-          c = clone(target.constructor.prototype);
-
-          // give the copy all the instance properties of target.  It has the same
-          // prototype as target, so inherited properties are already there.
-          if (jsEnvironment.hasDefineProperty) {
-            copyOwnProperties(target, c);
-          } else {
-            for (property in target) {
+        var isPlainObject =
+          !(target instanceof target.constructor) ||
+          target.constructor === Object;
+        var c = isPlainObject ? {} : clone(target.constructor.prototype);
+        if (jsEnvironment.hasDefineProperty) {
+          Object.getOwnPropertyNames(target).forEach(function(property) {
+            Object.defineProperty(c, property,
+              Object.getOwnPropertyDescriptor(target, property));
+          });
+        } else {
+          for (var property in target) {
+            if (isPlainObject || Object.prototype.hasOwnProperty.call(target, property)) {
+              c[property] = target[property];
+            }
+          }
+          if (jsEnvironment.hasDontEnumBug) {
+            for (var i = 0; i < jsEnvironment.dontEnums.length; i++) {
+              property = jsEnvironment.dontEnums[i];
               if (Object.prototype.hasOwnProperty.call(target, property)) {
                 c[property] = target[property];
               }
             }
-            copyDontEnumProperties(target, c);
-          }
-        } else {
-          c = {};
-          if (jsEnvironment.hasDefineProperty) {
-            copyOwnProperties(target, c);
-          } else {
-            for (property in target) {
-              c[property] = target[property];
-            }
-            copyDontEnumProperties(target, c);
           }
         }
-
         return c;
       }
     }
@@ -364,8 +337,8 @@ var owl = (function() {
           }
         }
         if (jsEnvironment.hasDontEnumBug) {
-          for (var i = 0; i < jsEnvironment.dontEnumFunctions.length; i++) {
-            key = jsEnvironment.dontEnumFunctions[i];
+          for (var i = 0; i < jsEnvironment.dontEnums.length; i++) {
+            key = jsEnvironment.dontEnums[i];
             if (Object.prototype.hasOwnProperty.call(source, key)) {
               result[key] = deepCopy(source[key]);
             }
@@ -421,7 +394,6 @@ var owl = (function() {
       }
       return (
         typeof source.nodeType === 'number' &&
-        source.attributes &&
         source.childNodes &&
         source.cloneNode
       );

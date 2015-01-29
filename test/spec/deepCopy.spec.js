@@ -247,6 +247,10 @@ describe('owl.copy', function() {
 
 describe('owl.deepCopy', function() {
 
+  it('should not copy the document DOM node', function() {
+    expect(owl.deepCopy(document)).toBe(document);
+  });
+
   it('should not copy non-object types, they have value semantics', function() {
     var a = 1;
     var b = 'b';
@@ -430,10 +434,6 @@ describe('owl.deepCopy', function() {
     expect(function(){ owl.deepCopy(a, 2); }).toThrow(new Error('Exceeded max recursion depth in deep copy.'));
   });
 
-  it('should not copy the document DOM node', function() {
-    expect(owl.deepCopy(document)).toBe(document);
-  });
-
   it('should use custom registered copiers', function() {
     owl.deepCopy.register({
       canCopy: function(source) {
@@ -467,9 +467,9 @@ describe('owl.deepCopy', function() {
     expect(divCopy).not.toBe(div);
     expect(divCopy.children.length).toEqual(2);
     expect(divCopy.children[0].firstChild).not.toBe(t1);
-    expect(divCopy.children[0].firstChild.textContent).toEqual('123');
+    expect(divCopy.children[0].firstChild.nodeValue).toEqual('123');
     expect(divCopy.children[1].firstChild).not.toBe(t2);
-    expect(divCopy.children[1].firstChild.textContent).toEqual('abc');
+    expect(divCopy.children[1].firstChild.nodeValue).toEqual('abc');
   });
 
   it('should preserve reference structure of DOM nodes with the rest of the copy', function() {

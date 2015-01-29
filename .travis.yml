@@ -6,9 +6,10 @@ node_js:
 env:
   matrix:
   - BROWSER='phantomjs'
-  - BROWSER='chrome'
+  - BROWSER='chrome39'
   - BROWSER='chrome26'
-  - BROWSER='firefox'
+  - BROWSER='firefox35'
+  - BROWSER='firefox35'
   - BROWSER='firefox6'
   - BROWSER='firefox5'
   - BROWSER='firefox4'

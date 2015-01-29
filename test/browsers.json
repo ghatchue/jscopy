@@ -1,8 +1,9 @@
 {
-  "chrome": {
+  "chrome39": {
     "base": "SauceLabs",
     "browserName": "chrome",
-    "platform": "Windows 8.1"
+    "platform": "Windows 8.1",
+    "version": "39"
   },
   "chrome26": {
     "base": "SauceLabs",
@@ -10,10 +11,11 @@
     "platform": "Windows 8.1",
     "version": "26"
   },
-  "firefox": {
+  "firefox35": {
     "base": "SauceLabs",
     "browserName": "firefox",
-    "platform": "Windows 8.1"
+    "platform": "Windows 8.1",
+    "version": "35"
   },
   "firefox6": {
     "base": "SauceLabs",
