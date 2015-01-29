@@ -78,7 +78,7 @@ module.exports = function (grunt) {
       continuous: {
         browsers: ['PhantomJS']
       },
-      sauceTask: function() {
+      sauceTask: (function() {
         var config = {
           browsers: [
             process.env.BROWSER
@@ -89,7 +89,7 @@ module.exports = function (grunt) {
           config.transports = [ 'jsonp-polling' ];
         }
         return config;
-      },
+      })(),
       // Testers for dist build files
       dist: {
         options: {
