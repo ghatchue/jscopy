@@ -79,11 +79,16 @@ module.exports = function (grunt) {
         browsers: ['PhantomJS']
       },
       sauceTask: function() {
-        return {
+        var config = {
           browsers: [
             process.env.BROWSER
           ]
         };
+        if (process.env.BROWSER === 'ie6') {
+          // Support IE6: Default socket.io transport doesn't work on IE6
+          config.transports = [ 'jsonp-polling' ];
+        }
+        return config;
       },
       // Testers for dist build files
       dist: {
