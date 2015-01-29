@@ -488,9 +488,9 @@ describe('owl.deepCopy', function() {
     };
     var copy = owl.deepCopy(original);
     expect(copy.outer).not.toBe(original.outer);
-    expect(copy.outer).toBe(copy.body.children[0]);
-    expect(copy.header).toBe(copy.body.children[1]);
-    expect(copy.footer).toBe(copy.body.children[2]);
+    expect(copy.outer).toBe(copy.body.childNodes[0]);
+    expect(copy.header).toBe(copy.body.childNodes[1]);
+    expect(copy.footer).toBe(copy.body.childNodes[2]);
   });
 
 });
