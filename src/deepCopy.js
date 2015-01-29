@@ -394,6 +394,7 @@ var owl = (function() {
       }
       return (
         typeof source.nodeType === 'number' &&
+        source.attributes !== undefined &&
         source.childNodes &&
         source.cloneNode
       );
