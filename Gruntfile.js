@@ -83,6 +83,11 @@ module.exports = function (grunt) {
           process.env.BROWSER
         ]
       },
+      sauceTaskIE6: {
+        browsers: ['ie6'],
+        // Support IE6: Default socket.io transport doesn't work on IE6
+        transports: [ 'jsonp-polling' ]
+      },
       // Testers for dist build files
       dist: {
         options: {
@@ -111,7 +116,7 @@ module.exports = function (grunt) {
 
   var usePhantom = process.env.TRAVIS_PULL_REQUEST !== 'false' || process.env.BROWSER === 'phantomjs';
   var tasks = ['newer:jshint','copy', 'uglify'];
-  var travisTasks = usePhantom ? tasks.concat('karma:continuous') : tasks.concat('karma:sauceTask');
+  var travisTasks = usePhantom ? tasks.concat('karma:continuous') : tasks.concat('karma:sauceTask', 'karma:sauceTaskIE6');
   var distTasks = tasks.concat(['karma:dist', 'karma:distMin']);
 
   grunt.registerTask('default', tasks.concat('karma:continuous'));
