@@ -75,8 +75,12 @@ describe('owl.clone', function() {
     expect(clone.a).toEqual('Abracadabra');
   });
 
-  it('should return null for null value', function() {
+  it('should return null for a null value', function() {
     expect(owl.clone(null)).toBeNull();
+  });
+
+  it('should return undefined for an undefined value', function() {
+    expect(owl.clone(undefined)).toBeUndefined();
   });
 
   it('should not clone non-object types', function() {
@@ -109,8 +113,12 @@ describe('owl.copy', function() {
     expect(owl.copy(e)).toBe(e);
   });
 
-  it('should return null for null value', function() {
+  it('should return null for a null value', function() {
     expect(owl.copy(null)).toBeNull();
+  });
+
+  it('should return undefined for an undefined value', function() {
+    expect(owl.copy(undefined)).toBeUndefined();
   });
 
   it('should copy object wrapper for native type', function() {
@@ -266,6 +274,10 @@ describe('owl.deepCopy', function() {
 
   it('should return null for null value', function() {
     expect(owl.deepCopy(null)).toBeNull();
+  });
+
+  it('should return undefined for an undefined value', function() {
+    expect(owl.deepCopy(undefined)).toBeUndefined();
   });
 
   it('should copy object wrapper for native type', function() {
