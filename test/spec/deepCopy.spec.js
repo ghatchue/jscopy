@@ -465,11 +465,11 @@ describe('owl.deepCopy', function() {
     var divCopy = owl.deepCopy(div);
 
     expect(divCopy).not.toBe(div);
-    expect(divCopy.children.length).toEqual(2);
-    expect(divCopy.children[0].firstChild).not.toBe(t1);
-    expect(divCopy.children[0].firstChild.nodeValue).toEqual('123');
-    expect(divCopy.children[1].firstChild).not.toBe(t2);
-    expect(divCopy.children[1].firstChild.nodeValue).toEqual('abc');
+    expect(divCopy.childNodes.length).toEqual(2);
+    expect(divCopy.childNodes[0].firstChild).not.toBe(t1);
+    expect(divCopy.childNodes[0].firstChild.nodeValue).toEqual('123');
+    expect(divCopy.childNodes[1].firstChild).not.toBe(t2);
+    expect(divCopy.childNodes[1].firstChild.nodeValue).toEqual('abc');
   });
 
   it('should preserve reference structure of DOM nodes with the rest of the copy', function() {
